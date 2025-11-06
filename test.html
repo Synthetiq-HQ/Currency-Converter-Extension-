@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickCurrency Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.8;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .test-case {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .test-case h3 {
+      color: #374151;
+      margin-top: 0;
+    }
+
+    .currency-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #059669;
+      user-select: text;
+      cursor: text;
+      padding: 8px;
+      background: #f0fdf4;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 8px 0;
+    }
+
+    .instruction {
+      color: #6b7280;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: "Courier New", monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 QuickCurrency Test Page</h1>
+  <p class="instruction">
+    Highlight any currency value below and wait ~700ms for the conversion tooltip to appear.
+    Press Escape or click outside to dismiss.
+  </p>
+
+  <div class="test-case">
+    <h3>Test 1: Basic Symbols</h3>
+    <p>The laptop costs <span class="currency-text">$1,234.56</span> on Amazon.</p>
+    <p>The apartment is <span class="currency-text">£850,000</span> in London.</p>
+    <p>The meal was <span class="currency-text">€45.90</span> at the restaurant.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 2: ISO Codes</h3>
+    <p>The phone costs <span class="currency-text">USD 999</span> in the US.</p>
+    <p>The car is priced at <span class="currency-text">CNY 529,000</span> in China.</p>
+    <p>The ticket is <span class="currency-text">JPY 15000</span> for the flight.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 3: Spaced Numbers</h3>
+    <p>The house costs <span class="currency-text">¥ 5 000 000</span> in Tokyo.</p>
+    <p>The salary is <span class="currency-text">$ 120 000</span> per year.</p>
+    <p>The investment is <span class="currency-text">₹ 50 00 000</span> in India.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 4: Large Numbers</h3>
+    <p>The yacht costs <span class="currency-text">$12,500,000</span> in Monaco.</p>
+    <p>The villa is <span class="currency-text">EUR 3,450,000</span> in Spain.</p>
+    <p>The company valuation is <span class="currency-text">£ 1,000,000,000</span>.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 5: Decimal Precision</h3>
+    <p>The coffee costs <span class="currency-text">$4.50</span> at Starbucks.</p>
+    <p>The gas price is <span class="currency-text">£1.45</span> per liter.</p>
+    <p>The exchange rate is <span class="currency-text">€0.85</span> per dollar.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 6: Abbreviated Values</h3>
+    <p>The startup raised <span class="currency-text">$1.2M</span> in funding.</p>
+    <p>The property is worth <span class="currency-text">£2.5M</span> in total.</p>
+    <p>The deal is valued at <span class="currency-text">€500K</span>.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 7: Regional Variants</h3>
+    <p>The koala tour costs <span class="currency-text">AUD $250</span> in Australia.</p>
+    <p>The maple syrup is <span class="currency-text">CAD $15</span> in Canada.</p>
+    <p>The bungee jump is <span class="currency-text">NZD $200</span> in New Zealand.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 8: Mixed Context</h3>
+    <p>The property in Hong Kong costs <span class="currency-text">HK$ 8,500,000</span>.</p>
+    <p>In Singapore, the condo is <span class="currency-text">SGD 1,200,000</span>.</p>
+    <p>The Swiss watch is <span class="currency-text">CHF 25,000</span> in Zurich.</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 9: Same Currency (Should Not Convert)</h3>
+    <p>If your target is GBP, this should not show a tooltip: <span class="currency-text">£500</span></p>
+    <p class="instruction">💡 Tip: Extension only converts to different currencies</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 10: Chinese Yuan (CN ¥ format)</h3>
+    <p>Product price: <span class="currency-text">CN ¥ 185.00</span></p>
+    <p>Total Amount: <span class="currency-text">Total Amount:CN ¥ 80.00</span></p>
+    <p>Chinese price: <span class="currency-text">CN¥ 358.00</span></p>
+    <p>With context: <span class="currency-text">CN ¥ 35.00</span> (should detect as CNY)</p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 11: Country Prefixes</h3>
+    <p>UK price: <span class="currency-text">GB £ 100</span></p>
+    <p>US price: <span class="currency-text">US $ 50</span></p>
+    <p>Australian: <span class="currency-text">AU $ 75</span></p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 12: Currency Words</h3>
+    <p>Price in yuan: <span class="currency-text">185 yuan</span></p>
+    <p>Cost in RMB: <span class="currency-text">500 RMB</span></p>
+    <p>Amount in yen: <span class="currency-text">1000 yen</span></p>
+  </div>
+
+  <div class="test-case">
+    <h3>Test 13: Edge Cases</h3>
+    <p>Very small amount: <span class="currency-text">$0.99</span></p>
+    <p>No decimal: <span class="currency-text">€1000</span></p>
+    <p>With spaces: <span class="currency-text">¥ 10 000</span></p>
+    <p>Unicode variants: <span class="currency-text">￥ 500</span> (full-width yen)</p>
+    <p>Chinese character: <span class="currency-text">100 元</span> (yuan character)</p>
+  </div>
+
+  <hr style="margin: 40px 0;">
+
+  <h2>📋 Test Checklist</h2>
+  <ul>
+    <li>✓ Basic symbols convert correctly</li>
+    <li>✓ ISO codes are recognized</li>
+    <li>✓ Spaced numbers parse properly</li>
+    <li>✓ Large numbers with commas work</li>
+    <li>✓ Decimal precision is maintained</li>
+    <li>✓ Abbreviations (K, M, B) expand correctly</li>
+    <li>✓ Regional variants detected from context</li>
+    <li>✓ Same currency doesn't show tooltip</li>
+    <li>✓ Tooltip appears after ~700ms debounce</li>
+    <li>✓ Copy button works (click 📋)</li>
+    <li>✓ Escape key dismisses tooltip</li>
+    <li>✓ Click outside dismisses tooltip</li>
+    <li>✓ Changing selection dismisses tooltip</li>
+  </ul>
+
+  <p class="instruction">
+    <strong>Debug Tip:</strong> Open DevTools (F12) to see console logs from the extension.
+  </p>
+</body>
+</html>

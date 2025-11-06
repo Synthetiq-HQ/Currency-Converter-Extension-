@@ -1,0 +1,171 @@
+QuickCurrency Extension - Sanitization Audit Log
+==================================================
+Date: 2025-11-06
+Purpose: Open-source release preparation
+
+This log documents all sanitizations performed to remove private/local information
+before publishing to GitHub.
+
+SANITIZATION RULES APPLIED:
+1. Replace local IP addresses (192.168.*.*, 127.0.0.1, localhost) with placeholders
+2. Remove API keys/tokens (none found)
+3. Remove user-identifying information (none found)
+4. Remove manifest.json "key" field (none found)
+5. Remove .pem files (none found)
+6. Remove script_*.py files (development artifacts)
+
+FILES MODIFIED:
+===============
+
+1. options.html
+   - Line 290: Replaced placeholder
+   - Original: "http://192.168.1.100:5000/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Replacement: "http://<YOUR_PI_IP_OR_PROXY>/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Reason: Remove local IP address from placeholder
+
+2. README.md
+   - Line 111: Replaced example IP
+   - Original: "http://192.168.1.100:5000/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Replacement: "http://<YOUR_PI_IP_OR_PROXY>/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Reason: Remove local IP address from example
+
+3. INSTALL.md
+   - Multiple lines: Replaced IP addresses
+   - Original: "http://192.168.1.100:5000/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Replacement: "http://<YOUR_PI_IP_OR_PROXY>/convert?from={FROM}&to={TO}&amount={AMOUNT}"
+   - Line 218: Replaced curl example
+   - Original: "curl \"http://192.168.1.100:5000/convert?from=USD&to=GBP&amount=100\""
+   - Replacement: "curl \"http://<YOUR_PI_IP_OR_PROXY>/convert?from=USD&to=GBP&amount=100\""
+   - Line 241-242: Replaced IP example
+   - Original: "Example output: `192.168.1.100 2001:db8::1`\nUse the first IP (IPv4): `192.168.1.100`"
+   - Replacement: "Example output: `<YOUR_PI_IP> 2001:db8::1`\nUse the first IP (IPv4): `<YOUR_PI_IP>`"
+   - Line 250: Replaced placeholder text
+   - Original: "(Replace `192.168.1.100` with your Pi's IP)"
+   - Replacement: "(Replace `<YOUR_PI_IP_OR_PROXY>` with your Pi's IP)"
+   - Line 372: Replaced health check URL
+   - Original: "curl http://192.168.1.100:5000/health"
+   - Replacement: "curl http://<YOUR_PI_IP_OR_PROXY>/health"
+   - Reason: Remove all local IP addresses from documentation
+
+FILES REMOVED:
+==============
+
+1. script_1.py through script_13.py (13 files)
+   - Reason: Development artifacts, not needed for release
+   - Action: Deleted from GitHubChromeExtensions folder
+
+FILES ADDED:
+============
+
+1. .gitignore
+   - Purpose: Ignore build artifacts, IDE files, secrets
+   - Contents: Standard .gitignore for Chrome extension project
+
+2. LICENSE
+   - Purpose: MIT License for open-source release
+   - Note: Contains placeholder "<YOUR NAME>" for copyright holder
+
+3. SECURITY.md
+   - Purpose: Security policy and vulnerability reporting guidelines
+   - Note: Contains placeholder "<YOUR_EMAIL>" for security contact
+
+4. CONTRIBUTING.md
+   - Purpose: Contribution guidelines for open-source contributors
+
+5. TEST_PLAN.md (condensed)
+   - Purpose: Condensed test plan focusing on 7 acceptance tests
+   - Note: Original comprehensive TEST_PLAN.md preserved in CurrentChromeExtensions
+
+6. examples/test.html
+   - Purpose: Test page for manual testing
+   - Action: Copied from root test.html to examples/ folder
+
+FILES VERIFIED (NO CHANGES NEEDED):
+====================================
+
+1. manifest.json
+   - Verified: No "key" field present
+   - Verified: Valid JSON
+   - Verified: manifest_version is 3
+
+2. background.js
+   - Verified: No API keys or secrets
+   - Verified: Uses public, keyless APIs
+
+3. content.js
+   - Verified: No hardcoded IPs or secrets
+   - Verified: No user-identifying information
+
+4. options.js
+   - Verified: No hardcoded IPs (uses user input)
+   - Verified: No secrets
+
+5. proxy.py
+   - Verified: No API keys (uses public APIs)
+   - Verified: No hardcoded IPs
+
+6. All icon files (.png)
+   - Verified: No embedded metadata issues
+
+SECRETS SCAN RESULTS:
+=====================
+
+- API Keys: None found
+- Tokens: None found
+- Private Keys: None found (.pem files not present)
+- Email Addresses: None found
+- User Names: None found
+- Account IDs: None found
+
+SANITIZATION SUMMARY:
+=====================
+
+Total files modified: 3 (options.html, README.md, INSTALL.md)
+Total files removed: 13 (script_*.py files)
+Total files added: 6 (.gitignore, LICENSE, SECURITY.md, CONTRIBUTING.md, TEST_PLAN.md, examples/test.html)
+Total IP addresses replaced: 8 occurrences
+Total secrets found: 0
+
+VERIFICATION:
+=============
+
+✅ manifest.json is valid JSON
+✅ manifest.json does not contain "key" property
+✅ No localhost or local IP addresses remain in code
+✅ No .pem files present
+✅ No API keys or tokens found
+✅ README.md contains install instructions
+✅ README.md contains privacy/security notes
+
+READY FOR OPEN-SOURCE RELEASE:
+===============================
+
+The GitHubChromeExtensions folder is now sanitized and ready for:
+1. Git repository initialization
+2. GitHub repository creation
+3. Public release
+
+NEXT STEPS:
+===========
+
+1. Replace placeholders in LICENSE and SECURITY.md:
+   - LICENSE: Replace "<YOUR NAME>" with actual name
+   - SECURITY.md: Replace "<YOUR_EMAIL>" with security contact email
+
+2. Initialize git repository:
+   git init
+   git add .
+   git commit -m "Initial open-source release – sanitized"
+
+3. Create GitHub repository and push:
+   git remote add origin https://github.com/yourusername/quickcurrency.git
+   git branch -M main
+   git push -u origin main
+
+4. Update README.md:
+   - Replace "yourusername" with actual GitHub username
+   - Update repository URL if different
+
+---
+End of Audit Log
+
