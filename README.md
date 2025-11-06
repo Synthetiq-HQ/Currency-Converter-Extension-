@@ -1,5 +1,7 @@
 # QuickCurrency Browser Extension
 
+<img width="873" height="189" alt="download (1)" src="https://github.com/user-attachments/assets/00ab9e11-617a-4cac-9f7e-1b315b2307b3" />
+
 > Instantly convert highlighted currency values to your preferred currency. Free, fast, and privacy-friendly.
 
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
