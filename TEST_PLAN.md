@@ -1,149 +1,36 @@
-# QuickCurrency Test Plan
+# 1.2.0 validation · 29 October 2026
 
-Condensed test plan for validating extension functionality.
+## Automated results
+- 101 JavaScript checks passed with Node's built-in test runner.
+- Five optional proxy-helper checks passed using mocked Flask/requests, without installing or deploying a server.
+- Every runtime JavaScript file passed node --check; git diff --check passed.
+- Package validator checked 15 runtime files, page references and icon dimensions, and generated the ZIP and SHA-256 checksum.
 
-## Quick Start
+Coverage includes US/European grouping, Indian grouping, Unicode digits, aliases, zero/negative amounts, invalid/multiple prices; provider failover, timeouts and stale/malformed data; cache separation/restart/concurrency; site registration/removal, restricted-page recovery, popup closure during permission grants, late selection/input cancellation, manual popup/swap/copy and settings migration.
 
-1. Load extension in `chrome://extensions/` (Developer mode)
-2. Open `examples/test.html` in browser
-3. Highlight currency values and verify tooltip appears
-4. Check browser console (F12) for errors
+## Actual Dia checks
+- Reloaded the existing unpacked extension and visibly verified version 1.2.0 enabled.
+- Manual conversion works from the popup while the underlying page is chrome://extensions (a restricted page).
+- `$1,234.56` converted successfully. `€1.234,56` was recognised as EUR 1,234.56.
+- Browser requests successfully used the documented fallback when the primary did not complete; required attribution was displayed.
+- Enabled automatic highlighting for a loopback test page. Selecting the dollar price produced a visible floating GBP conversion and Copy button.
+- Opening the popup picked up that selected price.
+- Swap visibly changed GBP/USD and reused the converted amount.
+- Disabled the loopback site's highlighting; the popup visibly returned to Enable highlighting. The temporary site grant was removed.
+- Restored USD source and GBP target after testing.
 
-## Acceptance Tests (Must Pass)
+The native Dia permission dialog initially closed the popup before activation completed. That observation led to a worker-side completion fix, covered by a deterministic regression test. The final version was reloaded afterwards. Fresh permission-dialog closure after that fix has not been separately reproduced; existing-grant activation and removal were exercised in Dia.
 
-### Test 1: CN ¥ Format Detection
-**Input**: `"CN ¥ 185"`  
-**Expected**: Parsed as `{currency: 'CNY', amount: 185}` → Converted result ≈ Google "185 CNY to GBP"  
-**Status**: ⬜
+## Live provider checks
+The new rate service made live USD/GBP, SAR/GBP and EUR/GBP requests. All returned current dated Frankfurter responses. Browser and command-line requests may reach different providers/data updates. These are time-bound observations, not locked expected exchange rates.
 
-### Test 2: Total Amount Format
-**Input**: `"Total Amount:CN ¥ 80.00"`  
-**Expected**: Parsed as `{currency: 'CNY', amount: 80}`  
-**Status**: ⬜
+## Limits
+Other Chromium browsers, store submission and production proxy servers are not certified. Copy's plain-number behaviour and selection races have automated coverage; real clipboard contents, every website/frame combination and all UI edge positions have not been independently checked. Daily reference rates can differ from Google's intraday quote.
 
-### Test 3: Context-Aware ¥ Detection
-**Input**: `"¥ 185"` on page containing "CNY" nearby  
-**Expected**: Parsed as CNY  
-**Status**: ⬜
-
-### Test 4: Default ¥ Behavior
-**Input**: `"¥ 185"` on page with no CNY context  
-**Expected**: Parsed as JPY by default (unless user override)  
-**Status**: ⬜
-
-### Test 5: Basic USD Detection
-**Input**: `"$185.00"`  
-**Expected**: Parsed as USD  
-**Status**: ⬜
-
-### Test 6: Context Menu Fallback
-**Action**: Right-click selected currency → "QuickCurrency: Convert selection"  
-**Expected**: Tooltip appears (works even if content script injection fails)  
-**Status**: ⬜
-
-### Test 7: Popup Selection Reading
-**Action**: Highlight currency → Click extension icon  
-**Expected**: Popup shows conversion of current selection  
-**Status**: ⬜
-
-## Test Cases
-
-### Currency Formats
-
-| Format | Example | Expected Currency |
-|--------|---------|-------------------|
-| ISO Code | `USD 1234` | USD |
-| ISO Code | `CNY 529000` | CNY |
-| Country Prefix | `CN ¥ 35.00` | CNY |
-| Country Prefix | `GB £ 100` | GBP |
-| Symbol | `$1,234.56` | USD |
-| Symbol | `¥ 185` | JPY (default) or CNY (if context) |
-| Currency Word | `185 yuan` | CNY |
-| Currency Word | `500 RMB` | CNY |
-| Abbreviated | `$1.2M` | USD (1,200,000) |
-
-### AllChinaBuy Example
-
-**Test on AllChinaBuy.com:**
-1. Navigate to product page
-2. Highlight price: `"CN ¥ 185.00"`
-3. Verify tooltip shows CNY conversion (not USD)
-4. Verify conversion matches Google "185 CNY to GBP"
-
-## Priority Order Tests
-
-Verify parsing priority (strict order):
-
-1. **ISO Code** (highest priority)
-   - `USD 1234` → USD
-   - `CNY 529000` → CNY
-
-2. **Country Prefix**
-   - `CN ¥ 35.00` → CNY
-   - `GB £ 100` → GBP
-
-3. **Currency Words**
-   - `185 yuan` → CNY
-   - `500 RMB` → CNY
-
-4. **Symbol** (with user preference)
-   - `¥ 185` → JPY (default) or CNY (user setting)
-
-## Manual Test Checklist
-
-- [ ] Tooltip appears after ~700ms
-- [ ] Tooltip shows correct conversion
-- [ ] Copy button works (📋)
-- [ ] Escape key dismisses tooltip
-- [ ] Click outside dismisses tooltip
-- [ ] Settings save and load correctly
-- [ ] Context menu works
-- [ ] Popup shows current selection
-- [ ] Cache works (second conversion is instant)
-- [ ] Proxy mode works (if configured)
-
-## Debugging
-
-**Open DevTools (F12) → Console** to see:
-- Parser decisions: `[QuickCurrency] parseCurrency: PRIORITY X - Matched...`
-- Selection info: `[QuickCurrency] getCurrentSelectionInfo: Selection: ...`
-- Conversion requests: `[QuickCurrency] Converting...`
-
-## Test Commands
-
-### Test Parser Directly
-```javascript
-// In page console after selecting text:
-const selection = document.getSelection().toString();
-console.log('Raw selection:', JSON.stringify(selection));
+## Repeat checks
 ```
-
-### Verify Settings
-```javascript
-// In extension popup console:
-chrome.storage.sync.get(['ambiguousYenDefault'], (result) => {
-  console.log('Ambiguous yen default:', result.ambiguousYenDefault || 'JPY (default)');
-});
-```  
-
-## Browser Compatibility
-
-Test on:
-- ✅ Chrome 88+
-- ✅ Edge 88+
-- ✅ Brave Browser
-- ✅ Comet Browser
-- ✅ Opera 74+
-
-## Reporting Issues
-
-When reporting test failures, include:
-- Browser version
-- Extension version
-- Test case that failed
-- Console errors
-- Steps to reproduce
-
----
-
-**Note**: This is a condensed test plan. See full test plan in repository for comprehensive testing scenarios.
+node --test tests/*.test.js
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p '*_test.py'
+python3 scripts/package.py
+```
+The Python environment variable avoids generated __pycache__ directories, which browsers refuse inside an unpacked extension folder.

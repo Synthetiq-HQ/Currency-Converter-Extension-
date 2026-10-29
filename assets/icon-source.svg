@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Synthetiq">
+  <rect width="64" height="64" rx="10" fill="#ffffff"/>
+  <path d="M13 10h41v43H10V39h12v12h30V12H15v25h27v15H24V40h15v-1H13z" fill="#050506"/>
+  <rect x="36" y="46" width="7" height="5" fill="#6f5cff"/>
+</svg>
