@@ -51,3 +51,6 @@ desktop.ini
 *.backup
 *~
 
+
+# Generated, validated extension packages
+dist/
