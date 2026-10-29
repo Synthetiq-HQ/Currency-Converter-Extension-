@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QuickCurrency</title><link rel="stylesheet" href="ui.css"></head>
+<body class="popup">
+<header><img src="icon48.png" alt=""><div><h1>QuickCurrency</h1><p>by Synthetiq</p></div><button id="settings" class="icon" title="Settings" aria-label="Open settings">⚙</button></header>
+<main>
+<form id="converter"><label for="amount">Amount or price</label><input id="amount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="$1,234.56" maxlength="512">
+<div class="pair"><div><label for="from">From</label><select id="from"></select></div><button id="swap" type="button" aria-label="Swap currencies" title="Swap currencies">⇄</button><div><label for="to">To</label><select id="to"></select></div></div>
+<div id="favorites" class="favorites" aria-label="Favourite target currencies"></div>
+<button class="primary wide" id="convert" type="submit">Convert</button></form>
+<div class="result"><div class="caption" id="original">Your conversion</div><output id="result" aria-live="polite">—</output><div class="result-actions"><button id="copy" disabled>Copy</button><button id="copy-number" disabled>Copy number</button><button id="refresh" disabled aria-label="Refresh conversion">Refresh</button></div></div>
+<p class="status" id="status" role="status">Highlight a price on a page, or type one here.</p>
+<div class="site"><p id="site-label">Highlighting is off until you enable a website.</p><button id="toggle-site" disabled>Enable highlighting on this site</button></div>
+<footer>Indicative conversion. Your card or bank may use a different rate.<span id="attribution" hidden> <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates by ExchangeRate-API</a>.</span></footer>
+</main><script src="currency.js"></script><script src="settings.js"></script><script src="popup.js"></script>
+</body></html>

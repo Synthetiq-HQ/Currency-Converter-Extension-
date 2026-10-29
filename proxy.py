@@ -7,6 +7,8 @@ Caches exchange rates locally for privacy and speed
 from flask import Flask, request, jsonify
 import requests
 import time
+import math
+import re
 from typing import Dict, Optional
 
 app = Flask(__name__)
@@ -15,9 +17,9 @@ app = Flask(__name__)
 CACHE: Dict[str, dict] = {}
 TTL = 60 * 15  # 15 minutes default
 
-# API endpoints (both free and keyless)
-FRANKFURTER_API = "https://api.frankfurter.dev/latest"
-EXCHANGERATE_HOST_API = "https://api.exchangerate.host/convert"
+# Current public provider endpoints
+FRANKFURTER_API = "https://api.frankfurter.dev/v2/rate"
+EXCHANGERATE_OPEN_API = "https://open.er-api.com/v6/latest"
 
 
 def get_cached_rate(from_code: str, to_code: str) -> Optional[float]:
@@ -42,6 +44,8 @@ def get_cached_rate(from_code: str, to_code: str) -> Optional[float]:
 def cache_rate(from_code: str, to_code: str, rate: float) -> None:
     """Store rate in cache."""
     key = f"{from_code}:{to_code}"
+    if len(CACHE) >= 100 and key not in CACHE:
+        del CACHE[min(CACHE, key=lambda k: CACHE[k]["ts"])]
     CACHE[key] = {
         "rate": rate,
         "ts": time.time()
@@ -52,15 +56,16 @@ def cache_rate(from_code: str, to_code: str, rate: float) -> None:
 def fetch_from_frankfurter(from_code: str, to_code: str) -> Optional[float]:
     """Fetch rate from Frankfurter API (primary)."""
     try:
-        params = {"from": from_code, "to": to_code}
         print(f"[FRANKFURTER] Fetching {from_code} -> {to_code}")
 
-        response = requests.get(FRANKFURTER_API, params=params, timeout=8)
+        response = requests.get(f"{FRANKFURTER_API}/{from_code}/{to_code}", timeout=4)
 
         if response.ok:
             data = response.json()
-            if "rates" in data and to_code in data["rates"]:
-                rate = data["rates"][to_code]
+            if data.get("base") == from_code and data.get("quote") == to_code:
+                rate = data["rate"]
+                if not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
+                    return None
                 print(f"[FRANKFURTER] Success: {rate}")
                 return rate
 
@@ -72,19 +77,19 @@ def fetch_from_frankfurter(from_code: str, to_code: str) -> Optional[float]:
         return None
 
 
-def fetch_from_exchangerate_host(from_code: str, to_code: str, amount: float) -> Optional[float]:
-    """Fetch rate from ExchangeRate.host API (fallback)."""
+def fetch_from_open_api(from_code: str, to_code: str, amount: float) -> Optional[float]:
+    """Fetch rate from ExchangeRate-API open v6 (fallback)."""
     try:
-        params = {"from": from_code, "to": to_code, "amount": amount}
         print(f"[EXCHANGERATE] Fetching {from_code} -> {to_code}")
 
-        response = requests.get(EXCHANGERATE_HOST_API, params=params, timeout=8)
+        response = requests.get(f"{EXCHANGERATE_OPEN_API}/{from_code}", timeout=4)
 
         if response.ok:
             data = response.json()
-            if "result" in data:
-                result = data["result"]
-                rate = result / amount if amount != 0 else 0
+            if data.get("result") == "success" and data.get("base_code") == from_code:
+                rate = data.get("rates", {}).get(to_code)
+                if not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
+                    return None
                 print(f"[EXCHANGERATE] Success: rate={rate}")
                 return rate
 
@@ -107,8 +112,10 @@ def convert():
     except (ValueError, TypeError):
         return jsonify({"error": "Invalid amount parameter"}), 400
 
-    if not from_code:
-        return jsonify({"error": "Missing 'from' parameter"}), 400
+    if not re.fullmatch(r"[A-Z]{3}", from_code) or not re.fullmatch(r"[A-Z]{3}", to_code) or not math.isfinite(amount):
+        return jsonify({"error": "Invalid currency or amount"}), 400
+    if from_code == to_code or amount == 0:
+        return jsonify({"result": amount, "cached": False}), 200
 
     print(f"\n[REQUEST] {from_code} -> {to_code} (amount: {amount})")
 
@@ -137,8 +144,8 @@ def convert():
             "source": "frankfurter"
         })
 
-    # Fallback to ExchangeRate.host
-    rate = fetch_from_exchangerate_host(from_code, to_code, amount)
+    # Fallback to ExchangeRate-API open v6
+    rate = fetch_from_open_api(from_code, to_code, amount)
 
     if rate is not None:
         cache_rate(from_code, to_code, rate)
@@ -148,7 +155,7 @@ def convert():
             "cached": False,
             "from": from_code,
             "to": to_code,
-            "source": "exchangerate.host"
+            "source": "exchangerate-api"
         })
 
     # All APIs failed
@@ -191,7 +198,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"TTL: {TTL}s ({TTL/60} minutes)")
     print(f"Primary API: {FRANKFURTER_API}")
-    print(f"Fallback API: {EXCHANGERATE_HOST_API}")
+    print(f"Fallback API: {EXCHANGERATE_OPEN_API}")
     print("=" * 60)
     print("Starting server on http://0.0.0.0:5000")
     print("=" * 60)

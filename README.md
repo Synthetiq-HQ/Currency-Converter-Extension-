@@ -1,269 +1,51 @@
-# QuickCurrency Browser Extension
+# QuickCurrency · by Synthetiq
 
-<img width="873" height="189" alt="download (1)" src="https://github.com/user-attachments/assets/00ab9e11-617a-4cac-9f7e-1b315b2307b3" />
+Highlight a price or paste an amount into the popup, choose a currency and convert. Plain JavaScript, Manifest V3, no account, tracking or AI service.
 
-> Instantly convert highlighted currency values to your preferred currency. Free, fast, and privacy-friendly.
+## Install in Dia
 
-![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+1. Download the latest validated ZIP from a GitHub Actions run, or clone this repository.
+2. Extract the ZIP into a permanent folder.
+3. In Dia open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the folder containing `manifest.json`.
+4. Open **Extensions → QuickCurrency**. Pin it through Dia's **Extensions → Pin Extensions** menu if desired.
 
-## Features
+Keep that folder in place. To update an unpacked install, replace its runtime files and click **Reload** in the extension manager. Normal unpacked installs do not automatically update from GitHub.
 
-✨ **Instant Conversion** - Highlight any currency amount and see the conversion in ~700ms  
-🌍 **14+ Currencies** - GBP, USD, EUR, JPY, CNY, INR, and more  
-🔒 **Privacy-First** - No tracking, no telemetry, optional local proxy  
-⚡ **Smart Caching** - 15-minute default cache to minimize API calls  
-🎯 **Flexible Parsing** - Detects both symbols ($, £, €, ¥) and ISO codes (USD, GBP, CNY)  
-🛠️ **Raspberry Pi Proxy** - Optional local proxy for complete data sovereignty  
+## Use
 
-## Installation
+- Type `1234.56`, paste `€1.234,56`, or highlight `USD 100` on a webpage and open the popup.
+- Choose source and target currencies. Use **Swap**, favourite target shortcuts, **Copy** or **Copy number**.
+- Right-click a selected price → **Convert with QuickCurrency** for a floating result.
+- For automatic floating results, open the popup on a website and select **Enable highlighting on this site**. Approve that site's browser permission. Disable it in the popup or remove it in Settings.
+- Open with **Alt+Shift+C** where the browser makes that shortcut available; shortcuts can be changed in the extension manager.
 
-### Load Unpacked in Chrome/Chromium/Comet Browser
+Automatic highlighting starts off. It runs only on approved HTTP(S) sites, uses events rather than continuous polling, and ignores text inputs and editors. Restricted pages such as browser settings and some PDF viewers cannot host an overlay; use manual popup input there. Reload existing tabs after updating the extension.
 
-1. **Download or clone this repository**
-   ```bash
-   git clone https://github.com/yourusername/quickcurrency.git
-   cd quickcurrency
-   ```
+## Recognition and preferences
 
-2. **Open Extension Management**
-   - Chrome/Chromium: Navigate to `chrome://extensions/`
-   - Comet Browser: Navigate to `comet://extensions/`
-   - Edge: Navigate to `edge://extensions/`
+US/European decimal separators, spaces/apostrophes, Indian grouping, K/M/B suffixes, Arabic/Persian digits, common currency aliases, negative amounts and zero are supported. Select one price at a time. Codes are validated; ordinary words such as “Pay 100” are not currencies.
 
-3. **Enable Developer Mode**
-   - Toggle the "Developer mode" switch in the top-right corner
+Bare `$` defaults to USD and `¥` to JPY; both can be changed. Automatic number formatting interprets a single separator with three following digits as grouping (`1,234` or `1.234`). For prices with three decimals, choose an explicit decimal format in Settings. An explicit code, such as CAD, takes priority over a bare symbol.
 
-4. **Load the Extension**
-   - Click "Load unpacked"
-   - Select the `quickcurrency` folder containing `manifest.json`
+## Rates and privacy
 
-5. **Verify Installation**
-   - You should see the QuickCurrency icon in your toolbar
-   - Click the icon to open settings
+Uses [Frankfurter v2](https://frankfurter.dev/) with [ExchangeRate-API open v6](https://www.exchangerate-api.com/docs/free) as fallback. Conversions are indicative daily reference values; they can differ from Google, card providers and bank quotes. **Refresh** bypasses the local pair cache; it does not create intraday data.
 
-## Usage
+Currency codes are sent to the selected provider and the amount is multiplied locally. Webpage text, exact selected amounts and browsing history are not sent to public rate providers. Providers necessarily receive network requests; consult their privacy terms. ExchangeRate-API attribution appears when its rates are used. No conversion history or telemetry is stored.
 
-### Basic Usage
+Settings use browser sync storage; the bounded rate cache and enabled sites are local. No `tabs` permission or mandatory access to all webpages is requested. See [SECURITY.md](SECURITY.md) for permissions.
 
-1. **Highlight currency text** on any webpage:
-   - `$1,234.56`
-   - `USD 1000`
-   - `¥ 5 000`
-   - `€1.2M`
-   - `CN ¥ 529,000`
+An optional conversion proxy remains available in Settings. Include `{FROM}`, `{TO}` and `{AMOUNT}` placeholders. The extension requests server permission and queries a unit amount of 1. It stops on proxy failure instead of silently sending requests to public providers.
 
-2. **Wait ~700ms** for the tooltip to appear above your selection
+## Development and packages
 
-3. **Copy** the converted value by clicking the 📋 icon in the tooltip
+Node 22 and Python 3.12+; no package installation needed:
 
-4. **Dismiss** the tooltip by:
-   - Pressing `Escape`
-   - Clicking outside the tooltip
-   - Changing your selection
-
-### Supported Formats
-
-| Format | Example | Currency |
-|--------|---------|----------|
-| Symbol | `$ 1,234` | USD (default) |
-| Symbol | `£ 1,234.56` | GBP |
-| Symbol | `¥ 5 000` | JPY (default) |
-| ISO Code | `USD 1234.56` | USD |
-| ISO Code | `CNY 529000` | CNY |
-| Spaced | `CN ¥ 529,000` | CNY |
-| Abbreviated | `$1.2M` | USD (1,200,000) |
-
-### Settings
-
-Click the extension icon or right-click → "Options" to configure:
-
-- **Target Currency** - Choose your preferred currency (default: GBP)
-- **Decimal Precision** - 0 or 2 decimal places
-- **Cache Duration** - 5-60 minutes (default: 15)
-- **Local Proxy** - Route requests through your Raspberry Pi (optional)
-
-## Raspberry Pi Proxy (Optional)
-
-For maximum privacy, run conversions through your own Raspberry Pi.
-
-### Setup Instructions
-
-1. **Install Flask on your Pi:**
-   ```bash
-   pip install flask requests
-   ```
-
-2. **Save the proxy script:**
-   ```bash
-   nano proxy.py
-   ```
-   Paste the contents from `proxy.py` (see below)
-
-3. **Run the proxy:**
-   ```bash
-   python3 proxy.py
-   ```
-   The proxy will start on `http://0.0.0.0:5000`
-
-4. **Configure the extension:**
-   - Open QuickCurrency settings
-   - Enable "Use Local Proxy"
-   - Enter: `http://<your-pi-ip>:5000/convert?from={FROM}&to={TO}&amount={AMOUNT}`
-   - Example: `http://<YOUR_PI_IP_OR_PROXY>/convert?from={FROM}&to={TO}&amount={AMOUNT}`
-
-### proxy.py (Minimal Python Proxy)
-
-```python
-# proxy.py - Minimal currency conversion proxy for Raspberry Pi
-from flask import Flask, request, jsonify
-import requests
-import time
-
-app = Flask(__name__)
-CACHE = {}
-TTL = 60 * 15  # 15 minutes
-
-FRANKFURTER_API = "https://api.frankfurter.dev/latest"
-EXCHANGERATE_HOST_API = "https://api.exchangerate.host/convert"
-
-@app.route("/convert")
-def convert():
-    from_code = request.args.get("from", "").upper()
-    to_code = request.args.get("to", "GBP").upper()
-    try:
-        amount = float(request.args.get("amount", "1"))
-    except:
-        return jsonify({"error": "Invalid amount"}), 400
-
-    key = f"{from_code}:{to_code}"
-    now = time.time()
-
-    # Check cache
-    if key in CACHE and (now - CACHE[key]["ts"]) < TTL:
-        rate = CACHE[key]["rate"]
-        return jsonify({"result": round(rate * amount, 6), "cached": True})
-
-    # Fetch from Frankfurter
-    try:
-        r = requests.get(FRANKFURTER_API, params={"from": from_code, "to": to_code}, timeout=8)
-        if r.ok:
-            j = r.json()
-            if "rates" in j and to_code in j["rates"]:
-                rate = j["rates"][to_code]
-                CACHE[key] = {"rate": rate, "ts": now}
-                return jsonify({"result": round(rate * amount, 6), "cached": False})
-    except Exception:
-        pass
-
-    # Fallback to ExchangeRate.host
-    try:
-        r = requests.get(EXCHANGERATE_HOST_API, params={"from": from_code, "to": to_code, "amount": amount}, timeout=8)
-        if r.ok:
-            j = r.json()
-            if "result" in j:
-                rate = j["result"] / amount if amount != 0 else 0
-                CACHE[key] = {"rate": rate, "ts": now}
-                return jsonify({"result": round(j["result"], 6), "cached": False})
-    except Exception:
-        pass
-
-    return jsonify({"error": "Could not fetch rates"}), 502
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+```sh
+node --test tests/*.test.js
+python3 scripts/package.py
 ```
 
-## Testing
+The packaging script checks runtime references and icon dimensions, then creates `dist/QuickCurrency-1.2.0.zip` and a SHA-256 checksum. CI runs deterministic tests and uploads a package. Live provider tests are separate from deterministic tests.
 
-### Manual Test Checklist
-
-Test the following scenarios on a test page:
-
-- [ ] **Basic symbol**: `$1,234` → Converts to GBP
-- [ ] **ISO code**: `USD 1234` → Converts to GBP
-- [ ] **Spaced numbers**: `¥ 5 000` → Converts correctly
-- [ ] **Large numbers**: `CNY 529,000` → Handles commas
-- [ ] **Decimal values**: `€1,234.56` → Preserves precision
-- [ ] **Abbreviated**: `$1.2M` → Expands to 1,200,000
-- [ ] **Copy to clipboard**: Click 📋 → Value copies
-- [ ] **Dismiss on Escape**: Press Esc → Tooltip hides
-- [ ] **Dismiss on click outside**: Click away → Tooltip hides
-- [ ] **Cache works**: Same conversion twice → Second is instant
-- [ ] **Proxy mode**: Enable proxy → Still works
-
-### Debugging
-
-**Issue**: Tooltip doesn't appear
-- Check browser console (F12) for errors
-- Verify selection contains currency format
-- Ensure you waited ~700ms for debounce
-
-**Issue**: "Could not fetch rates" error
-- Check internet connection
-- Verify API endpoints are not blocked by firewall
-- Try clearing cache in settings
-
-**Issue**: Extension doesn't load
-- Verify all files are present in the folder
-- Check for syntax errors in console
-- Reload extension in `chrome://extensions`
-
-**Issue**: CSP/iframe restrictions
-- Some sites (PDFs, sandboxed iframes) may block content scripts
-- Use the toolbar icon for manual conversion (future feature)
-
-## Permissions Explained
-
-| Permission | Reason |
-|------------|--------|
-| `storage` | Save user settings and cache exchange rates locally |
-| `activeTab` | Inject content script into current page to detect selections |
-| `host_permissions` (Frankfurter) | Fetch exchange rates from free ECB-based API |
-| `host_permissions` (ExchangeRate.host) | Fallback API for currencies not covered by ECB |
-
-**Privacy Note**: This extension does NOT:
-- Track your browsing history
-- Send page content to external servers
-- Collect personal data
-- Include third-party analytics
-
-Only currency codes and amounts are sent to public APIs for conversion.
-
-## Supported Browsers
-
-- ✅ Google Chrome (88+)
-- ✅ Chromium (88+)
-- ✅ Microsoft Edge (88+)
-- ✅ Brave Browser
-- ✅ Comet Browser
-- ✅ Opera (74+)
-- ❌ Firefox (uses different extension format)
-
-## APIs Used
-
-This extension uses **free, keyless APIs**:
-
-1. **Primary**: [Frankfurter](https://api.frankfurter.dev) (ECB-based, no signup)
-2. **Fallback**: [ExchangeRate.host](https://api.exchangerate.host) (free tier, no key required)
-
-Both APIs are free for personal use and do not require API keys.
-
-## Contributing
-
-Contributions welcome! Please open an issue or PR.
-
-## Branding & Credits
-
-This extension is developed by **[Synthetiq](https://github.com/Synthetiq-HQ)**.
-
-- 🔗 [Synthetiq GitHub](https://github.com/Synthetiq-HQ)
-- 💡 Built with ❤️ for privacy-conscious currency converters
-
-## License
-
-MIT License - see LICENSE file for details
-
----
-
-**Note**: This extension is production-ready but consider it beta. Please report bugs via GitHub issues.
+Primary repository: [kas021/Currency-Converter-Extension-](https://github.com/kas021/Currency-Converter-Extension-). The organisation copy syncs from it. Current validation limits are recorded in [TEST_PLAN.md](TEST_PLAN.md); AI and library assistance is documented in [AI_CONTRIBUTIONS.md](AI_CONTRIBUTIONS.md). MIT license.
